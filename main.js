@@ -1,72 +1,85 @@
-const formulario = document.querySelector('#formulario')
-const listaFilme = document.querySelector('#listaFilme')
+const formulario = document.querySelector('#form-buscar-filme')
+const resultadoFilmes = document.querySelector('.resultado-container')
 
-function buscarFilme() {    
-    const apiKey = 'f60febf3e7bf76f4314496086bf8c249';
-    const movieName = 'Avengers'; 
-    
-    // Construindo a URL da solicitação
-    const apiUrl = `https://api.themoviedb.org/3/search/movie?api_key=${apiKey}&query=${encodeURIComponent(movieName)}`;
-    
-    // Fazendo a solicitação HTTP
-    fetch(apiUrl)
-      .then(response => {
-        if (!response.ok) {
-          throw new Error('Erro ao buscar filmes');
-        }
-        return response.json();
-      })
-      .then(data => {
-        // Processando a resposta
-        const results = data.results;
-        if (results.length > 0) {
-          // Extraindo dados do primeiro filme encontrado
-          const firstMovie = results[0];
-          console.log('Título do Filme:', firstMovie.title);
-          console.log('Descrição:', firstMovie.overview);
-          console.log('Data de Lançamento:', firstMovie.release_date);
-        } else {
-          console.log('Nenhum filme encontrado com esse nome.');
-        }
-      })
-      .catch(error => {
-        console.error('Erro:', error);
-      });
+function buscarFilme(movie) {
+  const apiKey = 'f60febf3e7bf76f4314496086bf8c249';
+
+  // Fazendo a solicitação HTTP
+  fetch(`https://api.themoviedb.org/3/search/movie?api_key=${apiKey}&query=${encodeURIComponent(movie)}`)
+    .then(res => {
+      //Verifica se a conecao foi bem sucedida
+      if (!res.ok) {
+        throw new Error('Erro ao buscar filmes');
+      }
+      return res.json();
+    })
+    .then((dado) => {
+      if (!dado.results.length) {
+        throw new Error('Filme nao encontrado')
+      }
+      criarElemento(dado.results)
+    })
+    .catch(error => {
+      console.error(error)
+      resultadoFilmes.innerHTML = `<p>${error}</p>`
+    });
 }
 
-buscarFilme()
-
 formulario.addEventListener('submit', (e) => {
-    e.preventDefault();
-
-    id = document.querySelector('#inputUsuario')
-    resposta = buscarFilme(id)
-
-    console.log(resposta)
-
-    // const titulo = document.querySelector('#inputTitulo')
-    // const imagem = document.querySelector('#inputUsuario')
-
-    // const divCard = document.createElement('div')
-    // divCard.className.add('div-card')
-
-    // const imagemCard = document;
-    // createElement('img')
-    // imagemCard.className.add('img-card')
-    // divCard.appendChild(imagemCard)
-
-    // const tituloCard = document;
-    // createElement('img')
-    // tituloCard.className.add('titulo-card')
-    // tituloCard.appendChild(imagemCard)
-
-    // const btnEditar = document.createElement('button')
-    // btnEditar.textContent = 'Editar';
-    // btnEditar.className.add('btnEditar-card')
-    // divCard.appendChild(btnEditar)
-
-    // const btnRemover = document.createElement('button')
-    // btnRemover.textContent = 'Remover';
-    // divCard.appendChild(btnRemover)
-
+  e.preventDefault();
+  const movie = document.querySelector('#inputTitulo').value
+  buscarFilme(movie)
 })
+
+function criarElemento(listaMovies) {
+  console.log(listaMovies)
+  resultadoFilmes.innerHTML = '';
+  listaMovies.forEach(filme => {
+    resultadoFilmes.innerHTML += `            
+    <div class="filme-container">
+        <img src="https://image.tmdb.org/t/p/w500${filme.poster_path}" alt="Poster do filme ${filme.title}">
+        <div class="filme-info">
+            <h1>${filme.title}</h1>
+            <p>${filme.overview}</p>
+            <div class="filmes-subinfos">
+                <p>Data: ${filme.release_date}</p>
+                <p>Nota: ${filme.vote_average}</p>
+          </div>
+        </div>
+    </div>`;
+    // listaMovies.forEach(filme => {
+    //   const containerFilme = document.createElement('div')
+    //   containerFilme.classList.add('filme-container')
+    
+    //   const imgFilme = document.createElement('img')
+    //   imgFilme.setAttribute('src', `https://image.tmdb.org/t/p/w500${filme.poster_path}`)
+    //   imgFilme.setAttribute('alt', `Poster do filme ${filme.title}`)
+    //   containerFilme.appendChild(imgFilme)
+    
+    //   const infoFilmes = document.createElement('div')
+    //   infoFilmes.classList.add('filme-info')
+    //   containerFilme.appendChild(infoFilmes)
+    
+    //   const tituloFilme = document.createElement('h2')
+    //   tituloFilme.innerHTML = filme.title
+    //   infoFilmes.appendChild(tituloFilme)
+    
+    //   const descricaoFilme = document.createElement('p')
+    //   descricaoFilme.innerHTML = filme.overview
+    //   infoFilmes.appendChild(descricaoFilme)
+    
+    //   const subInfos = document.createElement('div')
+    //   subInfos.classList.add('filmes-subinfos')
+    //   infoFilmes.appendChild(subInfos)
+    
+    //   const dataFilme = document.createElement('p')
+    //   dataFilme.innerHTML = filme.release_date
+    //   subInfos.appendChild(dataFilme)
+    
+    //   const notaFilme = document.createElement('p')
+    //   notaFilme.innerHTML = filme.vote_average
+    //   subInfos.appendChild(notaFilme)
+    
+    //   resultadoFilmes.appendChild(containerFilme)
+  })
+}
